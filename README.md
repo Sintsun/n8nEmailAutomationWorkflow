@@ -5,7 +5,7 @@
 
 ## Overview
 This project is an n8n workflow designed to automate the processing of Gmail emails. It collects emails daily, analyzes their content using the Grok AI model, categorizes them, checks for attachments, and stores the results in a Notion database.
-
+![n8n](images/n8nworkflow.png)
 ## Features
 - **Daily Email Collection**: Automatically fetches emails using a scheduled trigger.
 - **Content Analysis**: Uses Grok (xAI) to classify emails into categories (e.g., High Priority, Meeting Related, etc.).
@@ -90,7 +90,7 @@ This project is an n8n workflow designed to automate the processing of Gmail ema
 ### 2. Test the Workflow
 - Send test emails with varied content (e.g., "Urgent Meeting", "20% Discount").
 - Execute the workflow and verify Notion updates.
-
+![Notion](images/Notion.png)
 ## Usage
 - Collecting and processing emails.
 - Categories and attachment status are stored in the Notion database for review.
