@@ -92,7 +92,7 @@ This project is an n8n workflow designed to automate the processing of Gmail ema
 - Execute the workflow and verify Notion updates.
 
 ## Usage
-- The workflow runs daily at 9:00 AM HKT, collecting and processing emails.
+- Collecting and processing emails.
 - Categories and attachment status are stored in the Notion database for review.
 
 ## Troubleshooting
