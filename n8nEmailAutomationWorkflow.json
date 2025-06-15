@@ -15,7 +15,7 @@
       "type": "n8n-nodes-base.gmailTrigger",
       "typeVersion": 1.2,
       "position": [
-        -1900,
+        -1680,
         -60
       ],
       "id": "cdb20fc8-9cba-4e2d-a544-a585406018af",
@@ -55,7 +55,7 @@
             },
             {
               "key": "附件|checkbox",
-              "checkboxValue": "={{ $('Code').item.json.hasAttachment }}"
+              "checkboxValue": "={{ $('appendix').item.json.hasAttachment }}"
             },
             {
               "key": "分類|select",
@@ -68,7 +68,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        -1140,
+        -800,
         -60
       ],
       "id": "625517be-aacc-484c-a2b0-640c730edffa",
@@ -84,22 +84,6 @@
     },
     {
       "parameters": {
-        "operation": "formatDate",
-        "date": "={{ $json.internalDate }}",
-        "format": "=yyyy-MM-dd",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.dateTime",
-      "typeVersion": 2,
-      "position": [
-        -1740,
-        -60
-      ],
-      "id": "4bb42564-487e-49d2-91fa-91bd635e68ae",
-      "name": "Date & Time"
-    },
-    {
-      "parameters": {
         "promptType": "define",
         "text": "=請根據以下郵件內容，生成一個分類標籤（選項：高優先級、會議相關、工作、其他、廣告、個人、財務相關、項目更新、社交媒體、垃圾郵件）。郵件主旨：{{ $('Gmail Trigger').item.json.Subject }}，郵件內容：{{ $('Gmail Trigger').item.json.snippet }}。請根據關鍵詞匹配分類，例如“緊急”對應“高優先級”，“會議”對應“會議相關”，其他情況選擇“其他”。只返回分類標籤，例如\"高優先級\"。",
         "hasOutputParser": true,
@@ -108,7 +92,7 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        -1440,
+        -1160,
         -60
       ],
       "id": "fe78c977-1d06-4b0d-9cc7-d18614d5251d",
@@ -122,8 +106,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatXAiGrok",
       "typeVersion": 1,
       "position": [
-        -1440,
-        120
+        -1180,
+        100
       ],
       "id": "76fa0791-c3d4-4b57-911b-e8b5c4a3d396",
       "name": "xAI Grok Chat Model",
@@ -143,24 +127,37 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        -1260,
-        80
+        -980,
+        100
       ],
       "id": "e03994bb-7b2a-4a74-b02b-356ce26a0ffd",
       "name": "Structured Output Parser"
     },
     {
       "parameters": {
-        "jsCode": "try {\n  const payload = $('Gmail Trigger').first().json.payload || {};\n  const parts = payload.parts || [];\n  const hasAttachment = parts.some(part => part && part.filename);\n  return {\n    hasAttachment: hasAttachment\n  };\n} catch (e) {\n  return {\n    hasAttachment: false\n  };\n}"
+        "jsCode": "try {\n  const payload = $('Gmail Trigger').first().json.payload || {};\n  const parts = payload.parts || [];\n  const hasAttachment = parts.some(part => part && part.filename);\n  return {\n    hasAttachment: hasAttachment\n  };\n} catch (e) {\n  return {\n    hasAttachment: false\n  };\n}\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1580,
+        -1340,
         -60
       ],
       "id": "21f67262-807c-4279-b4b1-f7a8d2e9a623",
-      "name": "Code"
+      "name": "appendix"
+    },
+    {
+      "parameters": {
+        "jsCode": "const date = new Date(parseInt($input.first().json.internalDate));\nreturn {\n  formattedDate: date.toISOString().replace('Z', '+08:00')\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1520,
+        -60
+      ],
+      "id": "26fac65d-5c24-4a21-8eb3-b0bb63d635ef",
+      "name": "Date & Time"
     }
   ],
   "pinData": {},
@@ -170,17 +167,6 @@
         [
           {
             "node": "Date & Time",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Date & Time": {
-      "main": [
-        [
-          {
-            "node": "Code",
             "type": "main",
             "index": 0
           }
@@ -220,11 +206,22 @@
         ]
       ]
     },
-    "Code": {
+    "appendix": {
       "main": [
         [
           {
             "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "appendix",
             "type": "main",
             "index": 0
           }
