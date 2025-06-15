@@ -1,0 +1,246 @@
+{
+  "name": "n8nEmailAutomationWorkflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1900,
+        -60
+      ],
+      "id": "cdb20fc8-9cba-4e2d-a544-a585406018af",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bhPHDuJTe9gFCEU3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "2131d89e-3f5c-80de-92c2-d0e161cd2095",
+          "mode": "list",
+          "cachedResultName": "EMail",
+          "cachedResultUrl": "https://www.notion.so/2131d89e3f5c80de92c2d0e161cd2095"
+        },
+        "title": "={{ $('Gmail Trigger').item.json.Subject }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "寄件者|rich_text",
+              "textContent": "={{ $('Gmail Trigger').item.json.From }}"
+            },
+            {
+              "key": "內容|rich_text",
+              "textContent": "={{ $('Gmail Trigger').item.json.snippet }}"
+            },
+            {
+              "key": "日期|date",
+              "date": "={{ $('Date & Time').item.json.formattedDate }}",
+              "timezone": "Asia/Hong_Kong"
+            },
+            {
+              "key": "附件|checkbox",
+              "checkboxValue": "={{ $('Code').item.json.hasAttachment }}"
+            },
+            {
+              "key": "分類|select",
+              "selectValue": "={{ $json.output.category }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -1140,
+        -60
+      ],
+      "id": "625517be-aacc-484c-a2b0-640c730edffa",
+      "name": "Notion",
+      "alwaysOutputData": true,
+      "executeOnce": false,
+      "credentials": {
+        "notionApi": {
+          "id": "dVhhbc5gHYvXb3Hr",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $json.internalDate }}",
+        "format": "=yyyy-MM-dd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -1740,
+        -60
+      ],
+      "id": "4bb42564-487e-49d2-91fa-91bd635e68ae",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=請根據以下郵件內容，生成一個分類標籤（選項：高優先級、會議相關、工作、其他、廣告、個人、財務相關、項目更新、社交媒體、垃圾郵件）。郵件主旨：{{ $('Gmail Trigger').item.json.Subject }}，郵件內容：{{ $('Gmail Trigger').item.json.snippet }}。請根據關鍵詞匹配分類，例如“緊急”對應“高優先級”，“會議”對應“會議相關”，其他情況選擇“其他”。只返回分類標籤，例如\"高優先級\"。",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -1440,
+        -60
+      ],
+      "id": "fe78c977-1d06-4b0d-9cc7-d18614d5251d",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "grok-3-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatXAiGrok",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        120
+      ],
+      "id": "76fa0791-c3d4-4b57-911b-e8b5c4a3d396",
+      "name": "xAI Grok Chat Model",
+      "notesInFlow": false,
+      "credentials": {
+        "xAiApi": {
+          "id": "okhstaOylRgrtaw5",
+          "name": "xAi account"
+        }
+      },
+      "notes": "請根據以下郵件內容，生成一個分類標籤（選項：高優先級、會議相關、工作、其他、廣告、個人、財務相關、項目更新、社交媒體、垃圾郵件）。郵件主旨：{{ $json.subject }}，郵件內容：{{ $json.text }}。請只返回分類標籤，例如\"廣告\"。"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"category\": \"分類標籤\"}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1260,
+        80
+      ],
+      "id": "e03994bb-7b2a-4a74-b02b-356ce26a0ffd",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const payload = $('Gmail Trigger').first().json.payload || {};\n  const parts = payload.parts || [];\n  const hasAttachment = parts.some(part => part && part.filename);\n  return {\n    hasAttachment: hasAttachment\n  };\n} catch (e) {\n  return {\n    hasAttachment: false\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1580,
+        -60
+      ],
+      "id": "21f67262-807c-4279-b4b1-f7a8d2e9a623",
+      "name": "Code"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "xAI Grok Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a7f8cc63-70f2-49da-88cd-b542c55d56d9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4272a8a6c2b36a9a79439cb2c137ce378943a6a566ed791354eee60381fe9eb7"
+  },
+  "id": "SSm0sAhkqZNtRi4e",
+  "tags": []
+}
